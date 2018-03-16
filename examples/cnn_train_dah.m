@@ -25,13 +25,13 @@ function [net, stats] = cnn_train_dah(net, imdb, getBatch, varargin)
 
 opts.expDir = fullfile('data','exp') ;
 opts.continue = true ;
-opts.batchSize = 256 ;
+opts.batchSize = 310 ;
 opts.numSubBatches = 1 ;
 opts.train = [] ;
 opts.val = [] ;
 opts.gpus = [] ;
 opts.prefetch = false ;
-opts.numEpochs = 300 ;
+opts.numEpochs = 30 ;
 opts.learningRate = 0.001 ;
 opts.weightDecay = 0.0005 ;
 opts.momentum = 0.9 ;
@@ -352,7 +352,7 @@ for t=1:params.batchSize:numel(subset)
     num = num + numel(batch) ;
     if numel(batch) == 0, continue ; end
 
-    [im, labels] = params.getBatch(params.imdb, batch) ;
+    [im, labels, actLabels] = params.getBatch(params.imdb, batch) ;  % zwl: load the img&label for training
 
     if params.prefetch
       if s == params.numSubBatches
@@ -376,7 +376,8 @@ for t=1:params.batchSize:numel(subset)
       dzdy = [] ;
       evalMode = 'test' ;
     end
-    net.layers{end}.class = labels ;
+    net.layers{end}.class = labels ;  % zwl: pass the class labels to the network
+    net.layers{end}.actLabels = actLabels;
     res = vl_simplenn_dah(net, im, dzdy, res, ...
                       'accumulate', s ~= 1, ...
                       'mode', evalMode, ...
@@ -695,14 +696,16 @@ valIds = imdb.images.set==2;
 trSrcIds = srcIds & trIds;
 valSrcIds = srcIds & valIds;
 
-% tgtLabels = double(imdb.images.actLabel(tgtIds));
-% tgtFileNames = imdb.images.trainValNames(tgtIds);
+tgtIds = allIds(imdb.images.label == 0);
+tgtIds = tgtIds(randperm(length(tgtIds))); % Shuffle target data
+
+tgtLabels = double(imdb.images.actLabel(tgtIds));
+tgtFileNames = imdb.images.trainValNames(tgtIds);
 
 trSrcIds = allIds(trSrcIds);
 trSrcIds = trSrcIds(randperm(length(trSrcIds))); % Shuffle Source Training data
 valSrcIds = allIds(valSrcIds);
-tgtIds = allIds(imdb.images.label == 0);
-tgtIds = tgtIds(randperm(length(tgtIds))); % Shuffle target data
+
 trSrcLabels = imdb.images.actLabel(trSrcIds);
 valSrcLabels = imdb.images.actLabel(valSrcIds);
 

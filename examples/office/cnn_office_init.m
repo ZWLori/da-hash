@@ -12,7 +12,7 @@ opts.initBias = 0 ;
 opts.weightDecay = 1 ;
 %opts.weightInitMethod = 'xavierimproved' ;
 opts.weightInitMethod = 'gaussian' ;
-opts.model = 'alexnet' ;
+opts.model = 'vgg_dah'; %'alexnet' ;
 opts.batchNormalization = false ;
 opts.networkType = 'simplenn' ;
 opts.cudnnWorkspaceLimit = 1024*1024*1204 ; % 1GB
@@ -59,6 +59,7 @@ switch opts.model
     net = vgg_vd(net, opts) ;
     bs = 24 ;
   case 'vgg-dah'
+    fprintf('vgg-dah cnn office init');
     net.meta.normalization.imageSize = [224, 224, 3] ; % Pretrained_DomainAdaptiveHash
     net = vgg_dah(net, opts) ;
     bs = 2*(opts.C * opts.K) ; % source = 31*K = 155 + target = 155

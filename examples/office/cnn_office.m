@@ -13,26 +13,26 @@ run(fullfile(fileparts(mfilename('fullpath')), ...
 % Office dataset domains: {'amazon', 'dslr', 'webcam'}
 % OfficeHome dataset domains: {'Art', 'Clipart', 'Product', 'RealWorld'}
 % Change the domains below to conduct the experiment
-srcDataset = 'Product';
-tgtDataset = 'Clipart';
+srcDataset = 'amazon';
+tgtDataset = 'webcam';
 
-opts.isOfficeHome = true;
+opts.isOfficeHome = false;
 if opts.isOfficeHome
     home = 'OfficeHome'; % Office or OfficeHome
     opts.imagesSubDir = '';
     opts.C = 65; % number of categories
 else
     home = 'Office'; % Office or OfficeHome
-    opts.imagesSubDir = 'images';
-    opts.C = 31; % number of categories
+    opts.imagesSubDir = '';
+    opts.C = 5; % number of categories
 end
 opts.modelType = 'vgg-dah' ;
 % Pretrained network path
-preModelPath = '/data/DB/Office/imagenet-vgg-f.mat'; 
+preModelPath = '/Users/ZWLori/desktop/FYP/da-hash/data/DB/Office/imagenet-vgg-f.mat'; 
 % Experimental results are stored at exp_root
-exp_root = ['/data/DB/', home];
+exp_root = ['/Users/ZWLori/desktop/FYP/da-hash/data/DB/', home];
 % Train data path (data is stored at data_root)
-data_root = ['/home/ASUAD/hkdv1/CodeRep/MatConvNet/matconvnet-1.0-beta20/examples/', home];
+data_root = '/Users/ZWLori/desktop/FYP/data/domain_adaptation_images/';
 jointDir = [srcDataset, '_', tgtDataset];
 opts.expDir = fullfile(exp_root, sprintf('%s-%s', jointDir, opts.modelType)) ;
 [opts, varargin] = vl_argparse(opts, varargin) ;
@@ -57,8 +57,8 @@ opts.lite = false ;
 opts.train = struct() ;
 
 %da_hash parameters
-opts.train.hashSize = 64;
-opts.train.gpus = 1;
+opts.train.hashSize = 16;
+opts.train.gpus = [];
 opts.train.K = 5; % Number of samples per category
 opts.train.gamma = 5*1e3; % Weight for linearMMD Loss
 % opts.train.gamma = 1e2; % Weight for unbiasedMMD Loss
@@ -212,11 +212,12 @@ else
 end
 data = getImageBatch(images, opts.(phase), 'prefetch', nargout == 0) ;
 if nargout > 0
-  labels = imdb.images.label(batch) ;
+  labels = imdb.images.label(batch) ; 
+  actLabels = imdb.images.actLabel(batch);
   switch networkType
     case 'simplenn'
-      varargout = {data, labels} ;
+      varargout = {data, labels, actLabels} ;
     case 'dagnn'
-      varargout{1} = {'input', data, 'label', labels} ;
+      varargout{1} = {'input', data, 'label', labels, 'actLabel', actLabels} ;
   end
 end

@@ -432,7 +432,7 @@ for i=1:n
       lopts.entpW = net.meta.trainOpts.entpW;
       lopts.beta = net.meta.trainOpts.beta;
       lopts.supHashW = net.meta.trainOpts.supHashW;
-      res(i+1).x = hash_entropy_loss(res(i).x, l.class, lopts) ;
+      res(i+1).x = hash_entropy_loss(res(i).x, l.class, l.actLabels, lopts) ;
 
     case 'softmaxloss_entropyloss'
       lopts.K = net.meta.trainOpts.K;
@@ -440,6 +440,12 @@ for i=1:n
       lopts.l1 = net.meta.trainOpts.l1;
       lopts.entpW = net.meta.trainOpts.entpW;
       res(i+1).x = vl_nnsoftmaxloss_entropyloss(res(i).x, l.class, lopts) ;
+      
+%     case 'tgt_pairwise_loss'
+%       lopts.K = net.meta.trainOpts.K;
+%       lopts.C = net.meta.trainOts.name;
+%       lopts.l1 = net.meta.trainOpts.l1;
+%       res(i+1).x = tgt_pairwise_loss(res(i).x, l.class, lopts) ;
       
     otherwise
       error('Unknown layer type ''%s''.', l.type) ;
@@ -455,6 +461,7 @@ for i=1:n
     forget = forget && (~needsBProp || (strcmp(l.type, 'lmmd') && ~lp.precious)) ;
     forget = forget && ~(strcmp(lp.type, 'loss') || strcmp(lp.type, 'softmaxloss')) ;
     forget = forget && ~(strcmp(lp.type, 'loss') || strcmp(lp.type, 'hash_entropy_loss')) ;
+    forget = forget && ~(strcmp(lp.type, 'loss') || strcmp(lp.type, 'tgt_pairwise_loss')) ;
     forget = forget && ~(strcmp(lp.type, 'loss') || strcmp(lp.type, 'softmaxloss_entropyloss')) ;
     forget = forget && ~lp.precious ;
   end
@@ -581,7 +588,7 @@ if doder
         lopts.entpW = net.meta.trainOpts.entpW;
         lopts.beta = net.meta.trainOpts.beta;
         lopts.supHashW = net.meta.trainOpts.supHashW;
-        res(i).dzdx = hash_entropy_loss(res(i).x, l.class, lopts, res(i+1).dzdx) ;
+        res(i).dzdx = hash_entropy_loss(res(i).x, l.class, l.actLabels, lopts, res(i+1).dzdx) ;
 
       case 'softmaxloss_entropyloss'
         lopts.K = net.meta.trainOpts.K;
@@ -589,6 +596,12 @@ if doder
         lopts.l1 = net.meta.trainOpts.l1;
         lopts.entpW = net.meta.trainOpts.entpW;
         res(i).dzdx = vl_nnsoftmaxloss_entropyloss(res(i).x, l.class, lopts, res(i+1).dzdx) ;
+        
+%       case 'tgt_pairwise_loss'
+%         lopts.K = net.meta.trainOpts.K;
+%         lopts.C = net.meta.classes.name;
+%         lopts.l1 = net.meta.trainOpts.l1;
+%         res(i).dzdx = tgt_pairwise_loss(res(i), l.class, lopts, res(i+1).dzdx) ;
         
     end % layers
 
