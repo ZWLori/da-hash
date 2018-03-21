@@ -13,8 +13,8 @@ run(fullfile(fileparts(mfilename('fullpath')), ...
 % Office dataset domains: {'amazon', 'dslr', 'webcam'}
 % OfficeHome dataset domains: {'Art', 'Clipart', 'Product', 'RealWorld'}
 % Change the domains below to conduct the experiment
-srcDataset = 'amazon';
-tgtDataset = 'webcam';
+srcDataset = 'amazon_copy';
+tgtDataset = 'webcam_copy';
 
 opts.isOfficeHome = false;
 if opts.isOfficeHome
@@ -24,15 +24,16 @@ if opts.isOfficeHome
 else
     home = 'Office'; % Office or OfficeHome
     opts.imagesSubDir = '';
-    opts.C = 5; % number of categories
+    opts.C = 31; % number of categories
 end
+
 opts.modelType = 'vgg-dah' ;
 % Pretrained network path
-preModelPath = '/Users/ZWLori/desktop/FYP/da-hash/data/DB/Office/imagenet-vgg-f.mat'; 
+preModelPath = '/home/zwlori/data/da-hash/DB/Office/imagenet-vgg-f.mat'; 
 % Experimental results are stored at exp_root
-exp_root = ['/Users/ZWLori/desktop/FYP/da-hash/data/DB/', home];
+exp_root = ['/home/zwlori/data/da-hash/DB/', home];
 % Train data path (data is stored at data_root)
-data_root = '/Users/ZWLori/desktop/FYP/data/domain_adaptation_images/';
+data_root = '/home/zwlori/data/domain_adaptation_images/';
 jointDir = [srcDataset, '_', tgtDataset];
 opts.expDir = fullfile(exp_root, sprintf('%s-%s', jointDir, opts.modelType)) ;
 [opts, varargin] = vl_argparse(opts, varargin) ;
@@ -58,7 +59,7 @@ opts.train = struct() ;
 
 %da_hash parameters
 opts.train.hashSize = 16;
-opts.train.gpus = [];
+opts.train.gpus = [2];   % Use GTX 1080
 opts.train.K = 5; % Number of samples per category
 opts.train.gamma = 5*1e3; % Weight for linearMMD Loss
 % opts.train.gamma = 1e2; % Weight for unbiasedMMD Loss

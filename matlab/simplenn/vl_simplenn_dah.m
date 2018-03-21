@@ -461,7 +461,7 @@ for i=1:n
     forget = forget && (~needsBProp || (strcmp(l.type, 'lmmd') && ~lp.precious)) ;
     forget = forget && ~(strcmp(lp.type, 'loss') || strcmp(lp.type, 'softmaxloss')) ;
     forget = forget && ~(strcmp(lp.type, 'loss') || strcmp(lp.type, 'hash_entropy_loss')) ;
-    forget = forget && ~(strcmp(lp.type, 'loss') || strcmp(lp.type, 'tgt_pairwise_loss')) ;
+%     forget = forget && ~(strcmp(lp.type, 'loss') || strcmp(lp.type, 'tgt_pairwise_loss')) ;
     forget = forget && ~(strcmp(lp.type, 'loss') || strcmp(lp.type, 'softmaxloss_entropyloss')) ;
     forget = forget && ~lp.precious ;
   end

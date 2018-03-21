@@ -4,10 +4,10 @@ function[] = test_dah()
 % Copyright (C) 2016 Hemanth Venkateswara.
 % All rights reserved.
 
-src = 'Product';
-tgt = 'Clipart';
-srcNetFile = 'net-epoch-300';
-isOfficeHome = true;
+src = 'amazon_copy';
+tgt = 'webcam_copy';
+srcNetFile = 'net-epoch-270';
+isOfficeHome = false;
 
 opts.gpus = 1;
 opts.numThreads = 12;
@@ -24,8 +24,8 @@ if isOfficeHome
     dataRoot = '/data/DB/OfficeHome/';
     imDataRoot = '/home/ASUAD/hkdv1/CodeRep/MatConvNet/matconvnet-1.0-beta20/examples/OfficeHome';
 else
-    dataRoot = '/data/DB/Office/';
-    imDataRoot = '/home/ASUAD/hkdv1/CodeRep/MatConvNet/matconvnet-1.0-beta20/examples/Office';
+    dataRoot = '/home/zwlori/data/da-hash/DB/Office/';
+    imDataRoot = '/home/zwlori/data/domain_adaptation/';
 end
 
 netPath = [dataRoot, src_tgt, '-vgg-dah/', srcNetFile, ext];
@@ -110,6 +110,7 @@ if numGpus >= 1
     for t = 1:bs:length(imLabels)
         batch = t:min(t+bs-1, numel(imLabels));
         net.layers{end}.class = imLabels(batch);
+        net.layers{end}.actLabels = imLabels(batch);
         imbatch = ims(:,:,:,batch);
         res = vl_simplenn_dah(net, imbatch, [], [], 'mode', evalMode);
         U = [U, squeeze(gather(res(end-1).x))];
