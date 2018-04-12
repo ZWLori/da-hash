@@ -6,7 +6,7 @@ function[] = test_dah()
 
 src = 'amazon_copy';
 tgt = 'webcam_copy';
-srcNetFile = 'net-epoch-270';
+srcNetFile = 'net-epoch-240';
 isOfficeHome = false;
 
 opts.gpus = 1;

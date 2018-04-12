@@ -13,18 +13,24 @@ run(fullfile(fileparts(mfilename('fullpath')), ...
 % Office dataset domains: {'amazon', 'dslr', 'webcam'}
 % OfficeHome dataset domains: {'Art', 'Clipart', 'Product', 'RealWorld'}
 % Change the domains below to conduct the experiment
-srcDataset = 'amazon_copy';
-tgtDataset = 'webcam_copy';
+srcDataset = 'mnist/mini/train';
+tgtDataset = 'mnist_m/mini/train';
 
 opts.isOfficeHome = false;
+opts.isOffice = false;
+opts.isMnist = true;
 if opts.isOfficeHome
     home = 'OfficeHome'; % Office or OfficeHome
     opts.imagesSubDir = '';
-    opts.C = 65; % number of categories
-else
+    opts.C = 65; % number of cavtegories
+elseif opts.isOffice
     home = 'Office'; % Office or OfficeHome
     opts.imagesSubDir = '';
     opts.C = 31; % number of categories
+else
+    home = 'Mnist';
+    opts.imagesSubDir = '';
+    opts.C = 10;
 end
 
 opts.modelType = 'vgg-dah' ;
@@ -33,8 +39,9 @@ preModelPath = '/home/zwlori/data/da-hash/DB/Office/imagenet-vgg-f.mat';
 % Experimental results are stored at exp_root
 exp_root = ['/home/zwlori/data/da-hash/DB/', home];
 % Train data path (data is stored at data_root)
-data_root = '/home/zwlori/data/domain_adaptation_images/';
-jointDir = [srcDataset, '_', tgtDataset];
+data_root = '/home/zwlori/data/';
+%jointDir = [srcDataset, '_', tgtDataset];
+jointDir = 'mnist_mnist_m_mini';
 opts.expDir = fullfile(exp_root, sprintf('%s-%s', jointDir, opts.modelType)) ;
 [opts, varargin] = vl_argparse(opts, varargin) ;
 
@@ -60,7 +67,7 @@ opts.train = struct() ;
 %da_hash parameters
 opts.train.hashSize = 16;
 opts.train.gpus = [2];   % Use GTX 1080
-opts.train.K = 5; % Number of samples per category
+opts.train.K = 3; % Number of samples per category  mnist-3 office-5
 opts.train.gamma = 5*1e3; % Weight for linearMMD Loss
 % opts.train.gamma = 1e2; % Weight for unbiasedMMD Loss
 opts.train.l1 = 1.0; % Weight for hash loss
@@ -77,6 +84,7 @@ if ~isfield(opts.train, 'gpus'), opts.train.gpus = []; end;
 if exist(opts.imdbPath, 'file')
   imdb = load(opts.imdbPath) ;
 else
+  disp(opts.imagesSubDir);
   imdb = createDAHImdb(opts) ;
   mkdir(opts.expDir) ;
   save(opts.imdbPath, '-struct', 'imdb') ;

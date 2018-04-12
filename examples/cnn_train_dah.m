@@ -25,7 +25,7 @@ function [net, stats] = cnn_train_dah(net, imdb, getBatch, varargin)
 
 opts.expDir = fullfile('data','exp') ;
 opts.continue = true ;
-opts.batchSize = 310 ;
+opts.batchSize = 60 ;   % mnist 60 office 310
 opts.numSubBatches = 1 ;
 opts.train = [] ;
 opts.val = [] ;
@@ -246,7 +246,7 @@ function err = error_none(params, labels, res)
 err = zeros(0,1) ;
 
 % -------------------------------------------------------------------------
-function err = error_hash_entropy(opts, labels, res)
+function err = error_hash_entropy(opts, labels, actLabels, res)
 % -------------------------------------------------------------------------
 U = gather(squeeze(res(end-1).x)); % convert to regular D x N array
 srcIds = labels > 0;
@@ -260,17 +260,31 @@ ls = labels(srcIds); % has to be [ns x 1]
 if size(ls,1) == 1
     ls = ls';
 end
+lt = actLabels(tgtIds);
+if size(lt,1) == 1
+    lt = lt';
+end
+
 Usdot = Us'*Us;
 expUsdot = exp(-0.5*Usdot);
 expUsdot(isinf(expUsdot)) = 1e30;
+Utdot = Ut'*Ut;
+expUtdot = exp(-0.5*Utdot);
+expUtdot(isinf(expUtdot)) = 1e30;
+
 % As = 1./(1 + exp(-0.5*Usdot)); % 0.5*<ui uj>
 As = 1./(1 + expUsdot); % 0.5*<ui uj>
-
 if any(isnan(As(:)))
     error('As is nan');
 end
 As = As(:); % Make it a vector 
 As(1:ns+1:end) = []; % Remove diagonal entries, they will anyway be similar
+At = 1./(1 + expUtdot);
+if any(isnan(At(:)))
+    error('At is nan');
+end
+At = At(:);
+At(1:nt+1:end) = [];
 if ns == 1 % If there is only one source data point.
     S = 1;
 else
@@ -281,9 +295,21 @@ S(S==0) = 1; % Similar
 S(S==-1) = 2; % Dissimilar
 S = S(:); % Make it a vector
 S(1:ns+1:end) = []; % Remove Diagonal entries like in As
+if nt == 1
+    St = 1;
+else
+    St = squareform(pdist(lt));
+end
+St(St>0) = -1;
+St(St==1) = 1;
+St(St==-1) = 2;
+St = St(:);
+St(1:nt+1:end) = [];
 As(As>=0.5) = 1;
 As(As<0.5) = 2;
-err = sum(As~=S);
+At(At>=0.5) = 1;
+At(At<0.5) = 2;
+err = (sum(As~=S) + sum(At~=St));
 
 % -------------------------------------------------------------------------
 function [net, state] = processEpoch(net, state, params, mode)
@@ -391,7 +417,7 @@ for t=1:params.batchSize:numel(subset)
     % accumulate errors
     error = sum([error, [...
       sum(double(gather(res(end).x))) ;
-      reshape(params.errorFunction(params, labels, res),[],1) ; ]],2) ;
+      reshape(params.errorFunction(params, labels, actLabels, res),[],1) ; ]],2) ;
   end
 
   % accumulate gradient

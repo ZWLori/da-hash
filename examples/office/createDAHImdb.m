@@ -19,7 +19,7 @@ if opts.isOfficeHome
         'Screwdriver', 'Shelf', 'Sink', 'Sneakers', 'Soda', 'Speaker', ...
         'Spoon', 'TV', 'Table', 'Telephone', 'ToothBrush', 'Toys', ...
         'Trash_Can', 'Webcam'};
-else
+elseif opts.isOffice
      clNames = {'back_pack', 'bike', 'bike_helmet', 'bookcase', 'bottle', ...
          'calculator', 'desk_chair', 'desk_lamp', 'desktop_computer', ...
          'file_cabinet', 'headphones', 'keyboard', 'laptop_computer', ...
@@ -28,6 +28,8 @@ else
          'punchers', 'ring_binder', 'ruler', 'scissors', 'speaker', ...
          'stapler', 'tape_dispenser', 'trash_can'};
 %    clNames = {'back_pack', 'bike', 'bookcase', 'desktop_computer', 'monitor'};
+elseif opts.isMnist
+    clNames = {'0', '1' , '2', '3', '4', '5', '6', '7', '8', '9'};
 end
 labelNames_len = length(clNames);
 trainValNames = {};
@@ -36,6 +38,9 @@ labels = {};
 set = {};
 for ii = 1:labelNames_len
     % Source
+    disp(opts.srcDataDir);
+    disp(opts.imagesSubDir);
+    disp(clNames{ii});
     imsSrc = dir(fullfile(opts.srcDataDir, opts.imagesSubDir, clNames{ii}, '*.jpg'));
     numSrcFiles = length(imsSrc);
     srcValSize = floor(numSrcFiles*opts.valSizeRatio);
